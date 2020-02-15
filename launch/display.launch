@@ -1,0 +1,35 @@
+<launch>
+
+  <arg name="model" default="$(find scl_agv)/urdf/AGV.urdf.xacro"/>
+  <arg name="rvizconfig" default="$(find scl_agv)/rviz/urdf.rviz" />
+
+  <node pkg="tf" type="static_transform_publisher" name="base_footprint2kinect" args="0.26 0.05 0.64 0 0 0 1 /base_link /camera_link 10"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  
+  <!-- sick LiDAR -->
+    <include file="$(find sick_scan)/launch/sick_tim_7xx.launch"  />
+
+  <!-- gmapping -->
+    <include file="$(find my_laser_matcher)/launch/laser_matcher_gmapping.launch"  />
+  
+   <!-- open kinect-->
+    <include file="$(find openni_launch)/launch/openni.launch" />
+  
+  <!-- ORB-SLAM-->
+    <include file="$(find orb_slam2_ros)/ros/launch/orb_slam2_kinect_rgbd.launch" />
+
+
+  <!-- arduino mega & nano1 & nano2-->
+    <include file="$(find rosserial_server)/launch/serial_arduino.launch" />
+
+  <node pkg="scl_agv"  name="Pwm"  type="Pwm.py"  output="screen"/>
+
+  <!--pd control-->
+    <include file="$(find pid)/launch/differential_drive_sim.launch"/>
+
+</launch>

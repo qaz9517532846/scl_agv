@@ -1,0 +1,9 @@
+<launch>
+  
+  <!-- MIX-->
+    <rosparam command="load" ns="cob_scan_unifier" file="$(find cob_scan_unifier)/param/scan_unifier.yaml" />
+     <node pkg="cob_scan_unifier" type="scan_unifier_node" name="scan_unifier_node" ns="cob_scan_unifier" respawn="false" output="screen" >
+
+	</node>
+  
+</launch>

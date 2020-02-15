@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="tf" type="static_transform_publisher" name="base_footprint2base_link" args="0 0 0.06 0 0 0 /base_footprint /base_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link2laser_link1" args="-0.3 -0.26 0.15 -2.355 0 0 /base_link /laser_scan_1 100"/>
+    <!--node pkg="tf" type="static_transform_publisher" name="base_link2imu" args="0 0.05 0 0 0 0 /base_link /imu 10"/-->
+    <node pkg="tf" type="static_transform_publisher" name="base_footprint2kinect" args="0.26 0 0.4 0 0 0 /base_link /camera_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link2laser_link2" args="0.3 0.26 0.15 0.785 0 0 /base_link /laser_scan_2 100"/>
+    <!--node pkg="tf" type="static_transform_publisher" name="base_link2laser_link3" args="0.23 0 0.98 3.14 0 0 /base_link /laser3 100"/-->
+</launch>

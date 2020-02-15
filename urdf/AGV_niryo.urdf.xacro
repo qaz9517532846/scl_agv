@@ -1,0 +1,318 @@
+<?xml version="1.0" ?>
+<robot name="AGV_niryo" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="distance_origin_shoulder_z" value="0.103" />
+  <xacro:property name="distance_shoulder_arm_z" value="0.080" />
+  <xacro:property name="distance_arm_elbow_x" value="0.210" />
+  <xacro:property name="distance_arm_elbow_y" value="0.0" />
+  <xacro:property name="distance_elbow_forearm_x" value="0.0415" />
+  <xacro:property name="distance_elbow_forearm_y" value="0.030" />
+  <xacro:property name="distance_forearm_wrist_z" value="0.180" />
+  <xacro:property name="distance_wrist_hand_x" value="0.0164" />
+  <xacro:property name="distance_wrist_hand_y" value="-0.0055" />
+  <xacro:property name="distance_hand_tool" value="0.0073" />
+	
+  <xacro:property name="PI" value="3.14159265359" />
+
+  <xacro:property name="limit_low_shoulder_rotation" value="-3.05433" />
+  <xacro:property name="limit_up_shoulder_rotation" value="3.05433" />
+  <xacro:property name="limit_low_arm_rotation" value="-1.91986" />
+  <xacro:property name="limit_up_arm_rotation" value="0.640187" />
+  <xacro:property name="limit_low_elbow_rotation" value="-1.397485" />
+  <xacro:property name="limit_up_elbow_rotation" value="${PI/2}" />
+  <xacro:property name="limit_low_forearm_rotation" value="-3.05433" />
+  <xacro:property name="limit_up_forearm_rotation" value="3.05433" />
+  <xacro:property name="limit_low_wrist_rotation" value="-1.74533" />
+  <xacro:property name="limit_up_wrist_rotation" value="1.91986" />
+  <xacro:property name="limit_low_hand_rotation" value="-2.57436" />
+  <xacro:property name="limit_up_hand_rotation" value="2.57436" />
+
+  <link name="base_footprint"/>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.079" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://scl_agv/meshes/AGV_model.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="white">
+           <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="laser_joint_1" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_scan_1" />
+    <origin xyz="0.1808 0.2848 0.111" rpy="0 0 0.707"/>
+  </joint>
+
+  <link name="laser_scan_1">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <mesh filename="package://scl_agv/meshes/laser_scan.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="blue">
+           <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="laser_joint_2" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_scan_2" />
+    <origin xyz="-0.3888 -0.2848 0.111" rpy="0 0 -2.2778"/>
+  </joint>
+
+  <link name="laser_scan_2">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <mesh filename="package://scl_agv/meshes/laser_scan.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="blue">
+           <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="wheel_left_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="main_wheel_left" />
+    <origin xyz="0 0.1161 0.145" rpy="1.5708 0 1.5708"/>
+  </joint>
+
+  <link name="main_wheel_left">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://scl_agv/meshes/main_wheel.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+           <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="wheel_right_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="main_wheel_right" />
+    <origin xyz="0 -0.1161 0.145" rpy="1.5708 0 1.5708"/>
+  </joint>
+
+  <link name="main_wheel_right">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://scl_agv/meshes/main_wheel.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+           <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="aid_left_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="aid_wheel_left" />
+    <origin xyz="-0.362 0.258 0.079" rpy="1.5708 0 1.5708"/>
+  </joint>
+
+  <link name="aid_wheel_left">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://scl_agv/meshes/aid_wheel.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+           <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="aid_right_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="aid_wheel_right" />
+    <origin xyz="-0.362 -0.258 0.079" rpy="1.5708 0 1.5708"/>
+  </joint>
+
+  <link name="aid_wheel_right">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://scl_agv/meshes/aid_wheel.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="black">
+           <color rgba="0 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+
+    <link name="niryo_base_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/base_link.stl" scale="0.01 0.01 0.01"/>
+			</geometry>
+			<material name="blue">
+                <color rgba="0 0.5 1 1"/>
+            </material>
+        </visual>
+	</link>
+
+    <link name="shoulder_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/niryo_joint1.stl" scale="0.01 0.01 0.01"/>
+			</geometry>
+			<material name="blue">
+                <color rgba="0 0.5 1 1"/>
+            </material>
+		</visual>
+	</link>
+
+    <link name="arm_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/niryo_joint2.stl" scale="0.01 0.01 0.01"/>
+			</geometry>
+			<material name="blue">
+                <color rgba="0 0.5 1 1"/>
+            </material>
+		</visual>
+	</link>
+	
+    <link name="elbow_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/niryo_joint3.stl" scale="0.01 0.01 0.01"/> 
+			</geometry>
+			<material name="black">
+                <color rgba="0.05 0.05 0.05 1"/>
+            </material>
+		</visual>
+	</link>
+
+    <link name="forearm_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/niryo_joint4.stl" scale="0.01 0.01 0.01"/>
+			</geometry>
+			<material name="blue">
+                <color rgba="0 0.5 1 1"/>
+            </material>
+		</visual>
+	</link>
+
+    <link name="wrist_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/niryo_joint5.stl" scale="0.01 0.01 0.01"/>
+			</geometry>
+			<material name="black">
+                <color rgba="0.05 0.05 0.05 1"/>
+            </material>
+		</visual>
+	</link>
+	
+    <link name="hand_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/niryo_joint6.stl" scale="0.01 0.01 0.01"/>
+			</geometry>
+			<material name="black">
+                <color rgba="0.05 0.05 0.05 0.4"/>
+            </material>
+		</visual>
+	</link>
+	
+	<link name="tool_link">
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+                <mesh filename="package://niryo_one_description/meshes/gripper_vision.stl" scale="0.01 0.01 0.01"/>
+			</geometry>
+			<material name="white">
+                <color rgba="0.8 0.8 0.8 0.4"/>
+            </material>
+		</visual>
+	</link>
+
+
+	<!--Joints -->
+
+    <joint name="ground_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="niryo_base_link" />
+        <origin xyz="0.076 -0.17 1.108" rpy="0 0 0" />
+    </joint>
+
+	<joint name="joint_1" type="revolute">
+        <parent link="niryo_base_link" />
+        <child link="shoulder_link" />
+		<origin xyz="0 0 ${distance_origin_shoulder_z}" rpy="0 0 0" />
+		<axis xyz="0 0 1" />
+		<limit effort="1" velocity="1.0" lower="${limit_low_shoulder_rotation}" upper="${limit_up_shoulder_rotation}" />
+	</joint>
+
+	<joint name="joint_2" type="revolute">
+        <parent link="shoulder_link" />
+        <child link="arm_link" />
+        <origin xyz="0 0 ${distance_shoulder_arm_z}" rpy="${PI/2} ${-PI/2} 0" />
+		<limit effort="1" velocity="1.0" lower="${limit_low_arm_rotation}" upper="${limit_up_arm_rotation}" />
+		<axis xyz="0 0 1" />
+	</joint>
+
+	<joint name="joint_3" type="revolute">
+        <parent link="arm_link" />
+        <child link="elbow_link" />
+        <origin xyz="${distance_arm_elbow_x} ${distance_arm_elbow_y} 0" rpy="0 0 ${-PI/2}" />
+		<limit effort="1" velocity="1.0" lower="${limit_low_elbow_rotation}" upper="${limit_up_elbow_rotation}" />
+		<axis xyz="0 0 1" />	
+	</joint>
+
+	<joint name="joint_4" type="revolute">
+        <parent link="elbow_link" />
+        <child link="forearm_link" />
+        <origin xyz="${distance_elbow_forearm_x} ${distance_elbow_forearm_y} 0" rpy="0 ${PI/2} 0" />
+		<limit effort="1" velocity="1.0" lower="${limit_low_forearm_rotation}" upper="${limit_up_forearm_rotation}" />
+		<axis xyz="0 0 1" />
+	</joint>
+
+	<joint name="joint_5" type="revolute">
+        <parent link="forearm_link" />
+        <child link="wrist_link" />
+		<origin xyz="0 0 ${distance_forearm_wrist_z}" rpy="0 ${-PI/2} 0" />
+		<limit effort="1" velocity="1.0" lower="${limit_low_wrist_rotation}" upper="${limit_up_wrist_rotation}" />
+		<axis xyz="0 0 1" />
+	</joint>
+
+	<joint name="joint_6" type="revolute">
+        <parent link="wrist_link" />
+        <child link="hand_link" />
+        <origin xyz="${distance_wrist_hand_x} ${distance_wrist_hand_y} 0" rpy="0 ${PI/2} 0" />
+		<limit effort="1" velocity="1.0" lower="${limit_low_hand_rotation}" upper="${limit_up_hand_rotation}" />
+		<axis xyz="0 0 1" />
+	</joint>
+
+	<joint name="hand_tool_joint" type="fixed">
+        <parent link="hand_link" />
+        <child link="tool_link" />
+        <origin xyz="0 0 ${distance_hand_tool}" rpy="0 0 0" />
+		<axis xyz="0 0 1" />
+	</joint>
+
+</robot>

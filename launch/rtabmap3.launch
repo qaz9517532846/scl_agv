@@ -1,0 +1,16 @@
+<launch>
+  
+  <arg name="model" default="$(find scl_agv)/urdf/AGV.urdf.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
+  <node pkg="tf" type="static_transform_publisher" name="base_footprint2kinect" args="0.26 0.05 1 1 0 0 0 /base_link /camera_link 10"/>
+
+
+  <include file="$(find openni_launch)/launch/openni.launch" />
+     
+ 
+ 
+</launch>

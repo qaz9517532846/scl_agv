@@ -1,0 +1,18 @@
+<launch>
+
+  <arg name="model" default="$(find scl_agv)/urdf/AGV.urdf.xacro"/>
+  <arg name="rvizconfig" default="$(find scl_agv)/rviz/urdf.rviz" />
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+  
+  <!-- hokuyo -->
+     <include file="$(find urg_node)/launch/laser2.launch.xml"/>
+  
+  <!--laserscan_multimerger-->
+     <include file="$(find ira_laser_tools)/launch/laserscan_multi_merger.launch.xml" />
+
+</launch>

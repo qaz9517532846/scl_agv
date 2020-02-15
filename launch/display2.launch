@@ -1,0 +1,63 @@
+<launch>
+  
+  <node pkg="tf" type="static_transform_publisher" name="base_footprint2kinect" args="0.26 0.05 0.48 0 0 0 /base_link /camera_link 10" />
+
+  <arg name="model" default="$(find scl_agv)/urdf/AGV.urdf.xacro"/>
+  <arg name="rvizconfig" default="$(find scl_agv)/rviz/display2.rviz" />
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+ 
+  <!-- hokuyo -->
+    <include file="$(find urg_node)/launch/laser2.launch.xml" />
+  
+  <!--laserscan_multimerger-->
+    <include file="$(find ira_laser_tools)/launch/laserscan_multi_merger.launch.xml" />
+  
+  <!-- sick LiDAR -->
+    <include file="$(find sick_scan)/launch/sick_tim_7xx.launch"  />
+
+  <!-- gmapping -->
+    <include file="$(find my_laser_matcher)/launch/laser_matcher.launch"  />
+
+  <!-- arduino mega & nano1 & nano2-->
+    <include file="$(find rosserial_server)/launch/serial_arduino.launch" />
+
+  <node pkg="scl_agv"  name="Pwm"  type="Pwm.py"  output="screen"/>
+  
+  <!--pd control-->
+    <include file="$(find pid)/launch/differential_drive_sim.launch"/>
+
+  <!-- Arguments -->
+  <arg name="map_file" default="$(find scl_agv)/map/0110out2.yaml"/>
+  <arg name="move_forward_only" default="false"/>
+  <arg name="cmd_vel_topic" default="/cmd_vel" />
+  <arg name="odom_topic" default="odom" />
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+  <!-- AMCL -->
+  <include file="$(find turtlebot3_navigation)/launch/amcl.launch"/>
+
+  <!-- move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="move_forward_only" value="$(arg move_forward_only)"/>
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+     <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_waffle.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_waffle.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find turtlebot3_navigation)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find turtlebot3_navigation)/param/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find turtlebot3_navigation)/param/move_base_params.yaml" command="load" />
+    <rosparam file="$(find turtlebot3_navigation)/param/dwa_local_planner_params_waffle.yaml" command="load" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
+  </node>
+
+  
+  
+</launch>

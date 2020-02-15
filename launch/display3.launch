@@ -1,0 +1,69 @@
+<launch>
+
+  <arg name="model" default="$(find scl_agv)/urdf/AGV.urdf.xacro"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  
+  <!-- sick LiDAR -->
+    <include file="$(find sick_scan)/launch/sick_tim_7xx.launch"  />
+
+  <node pkg="tf" type="static_transform_publisher" name="base_footprint2kinect" args="0.26 0.05 0.64 0 0 0 1 /base_link /camera_link 10"/>
+
+  <!-- open kinect-->
+    <include file="$(find openni_launch)/launch/openni.launch" />
+  
+  <!-- ORB-SLAM-->
+    <include file="$(find orb_slam2_ros)/ros/launch/orb_slam2_kinect_rgbd.launch" />
+  
+
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_base_footprint" 
+    args="0.0 0.0 0.0 0.0 0.0 0.0 /base_link /base_footprint 40" />
+
+  <node name="odom_pose" pkg="odom_tutorial" type="odom_pose"/>
+
+  <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+      <param name="map_update_interval" value="0.1"/>
+      <param name="maxUrange" value="25.0"/>
+      <param name="sigma" value="0.05"/>
+      <param name="kernelSize" value="1"/>
+      <param name="lstep" value="0.05"/>
+      <param name="astep" value="0.05"/>
+      <param name="iterations" value="5"/>
+      <param name="lsigma" value="0.075"/>
+      <param name="ogain" value="3.0"/>
+      <param name="lskip" value="0"/>
+      <param name="srr" value="0.1"/>
+      <param name="srt" value="0.2"/>
+      <param name="str" value="0.1"/>
+      <param name="stt" value="0.2"/>
+      <param name="linearUpdate" value="0.1"/>
+      <param name="angularUpdate" value="0.1"/>
+      <param name="temporalUpdate" value="5.0"/>
+      <param name="resampleThreshold" value="0.5"/>
+      <param name="particles" value="30"/>
+      <param name="xmin" value="-50.0"/>
+      <param name="ymin" value="-50.0"/>
+      <param name="xmax" value="50.0"/>
+      <param name="ymax" value="50.0"/>
+      <param name="delta" value="0.05"/>
+      <param name="llsamplerange" value="0.01"/>
+      <param name="llsamplestep" value="0.01"/>
+      <param name="lasamplerange" value="0.005"/>
+      <param name="lasamplestep" value="0.005"/>
+  </node>
+
+
+
+  <!-- arduino mega & nano1 & nano2-->
+    <include file="$(find rosserial_server)/launch/serial_arduino.launch" />
+
+  <node pkg="scl_agv"  name="Pwm"  type="Pwm.py"  output="screen"/>
+
+   <!--pd control-->
+    <include file="$(find pid)/launch/differential_drive_sim.launch"/>
+
+
+</launch>

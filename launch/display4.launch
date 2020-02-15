@@ -1,0 +1,87 @@
+<launch>
+
+  <arg name="model" default="$(find scl_agv)/urdf/AGV.urdf.xacro"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  
+
+   <!-- hokuyo -->
+    <include file="$(find urg_node)/launch/laser2.launch.xml" />
+
+   <!--laserscan_multimerger-->
+    <include file="$(find ira_laser_tools)/launch/laserscan_multi_merger.launch.xml" />
+
+  <!-- sick LiDAR -->
+    <include file="$(find sick_scan)/launch/sick_tim_7xx.launch"  />
+
+  <node pkg="tf" type="static_transform_publisher" name="base_footprint2kinect" args="0.26 0.05 0.64 0 0 0 1 /base_link /camera_link 10"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_base_footprint" args="0 0 0 0 0 0 1 /base_link /base_footprint 10"/>
+
+  <!-- open kinect-->
+    <include file="$(find openni_launch)/launch/openni.launch" />
+  
+  <!-- ORB-SLAM-->
+     <node name="orb_slam2_rgbd" pkg="orb_slam2_ros"  type="orb_slam2_ros_rgbd" output="screen">
+
+       <param name="publish_pointcloud" type="bool" value="true" />
+       <param name="publish_pose" type="bool" value="true" />
+       <param name="localize_only" type="bool" value="true" />
+       <param name="reset_map" type="bool" value="false" />
+
+       <!-- static parameters -->
+       <param name="load_map" type="bool" value="true" />
+       <param name="map_file" type="string" value="0110out2.bin" />
+       <param name="settings_file" type="string" value="$(find orb_slam2_ros)/orb_slam2/config/KinectRGBD.yaml" />
+       <param name="voc_file" type="string" value="$(find orb_slam2_ros)/orb_slam2/Vocabulary/ORBvoc.txt" />
+
+       <param name="pointcloud_frame_id" type="string" value="map" />
+       <param name="camera_frame_id" type="string" value="camera_link" />
+       <param name="min_num_kf_in_map" type="int" value="5" />
+
+  </node>
+
+  <include file="$(find turtlebot3_navigation)/launch/amcl.launch"/>
+
+  <node name="rviz1" pkg="rviz" type="rviz" args="-d $(find orb_slam2_ros)/ros/config/rviz_config.rviz"/>
+
+  <node name="odom_pose_nav" pkg="odom_tutorial" type="odom_pose_nav"/>
+
+
+  <!-- arduino mega & nano1 & nano2-->
+    <include file="$(find rosserial_server)/launch/serial_arduino.launch" />
+
+  <node pkg="scl_agv"  name="Pwm"  type="Pwm.py"  output="screen"/>
+
+   <!--pd control-->
+    <include file="$(find pid)/launch/differential_drive_sim.launch"/>
+
+
+   <!-- Arguments -->
+  <arg name="map_file" default="$(find scl_agv)/map/0110out2.yaml"/>
+  <arg name="move_forward_only" default="false"/>
+  <arg name="cmd_vel_topic" default="/cmd_vel" />
+  <arg name="odom_topic" default="odom" />
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+  <!-- move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="move_forward_only" value="$(arg move_forward_only)"/>
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find scl_agv)/param/costmap_common_params_waffle.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find scl_agv)/param/costmap_common_params_waffle.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find scl_agv)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find scl_agv)/param/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find scl_agv)/param/move_base_params.yaml" command="load" />
+    <rosparam file="$(find scl_agv)/param/dwa_local_planner_params_waffle.yaml" command="load" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="base_footprint"/>
+    <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
+  </node>
+
+</launch>
