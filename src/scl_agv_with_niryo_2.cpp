@@ -108,6 +108,7 @@ void agv_niryo_service::service_client(int agv_command)
     {
       change_localization(1);
       ROS_INFO("first Localization.");
+      ROS_INFO("change Localization to Encoder.");
       ros::Subscriber sub = service.n.subscribe("feedback", 1000, chatterCallback);
       ros::Rate loop_rate(1);
       for(int i = 0; i < 3; i++)
