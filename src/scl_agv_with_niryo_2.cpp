@@ -25,7 +25,7 @@ void change_localization(int method)
   agv_niryo_service service;
   std_msgs::Int32 localization;
   localization.data = method;
-  ros::Rate loop_rate(1);
+  ros::Rate loop_rate(10);
   for(int i = 0; i < 3; i++)
   {
      change_local.publish(localization);
