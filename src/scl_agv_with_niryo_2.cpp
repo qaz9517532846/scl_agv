@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <std_msgs/Int32.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
 #include <tf/transform_datatypes.h>
@@ -9,6 +10,7 @@
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 double feedback_x, feedback_y, feedback_theta;
+ros::Publisher change_local;
 
 class agv_niryo_service {
 public:
@@ -17,6 +19,19 @@ public:
 
     void service_client(int agv_command);
 };
+
+void change_localization(int method)
+{
+  agv_niryo_service service;
+  std_msgs::Int32 localization;
+  localization.data = method;
+  ros::Rate loop_rate(1);
+  for(int i = 0; i < 3; i++)
+  {
+     change_local.publish(localization);
+     loop_rate.sleep();
+  }
+}
 
 void agv_move_map(double x, double y, double theta)
 {
@@ -76,12 +91,9 @@ void agv_move_baselink(double x, double y, double theta)
 
 void chatterCallback(const scl_agv::vision_feedback::ConstPtr& msg)
 {
-  feedback_x = msg->x;
-  feedback_y = msg->y;
+  feedback_x = msg->x - 0.5;
+  feedback_y = msg->y + 0.1;
   feedback_theta = msg->theta;
-  ROS_INFO("I heard feedback x = %f", msg->x);
-  ROS_INFO("I heard feedback y = %f", msg->y);
-  ROS_INFO("I heard feedback theta = %f", msg->theta);
 }
 
 void agv_niryo_service::service_client(int agv_command)
@@ -94,6 +106,7 @@ void agv_niryo_service::service_client(int agv_command)
     ROS_INFO("respone number: %ld", (long int)srv.response.niryo_command);
     if((long int)srv.response.niryo_command == 1)
     {
+      change_localization(1);
       ROS_INFO("first Localization.");
       ros::Subscriber sub = service.n.subscribe("feedback", 1000, chatterCallback);
       ros::Rate loop_rate(1);
@@ -102,6 +115,9 @@ void agv_niryo_service::service_client(int agv_command)
          ros::spinOnce();
          loop_rate.sleep();
       }
+      ROS_INFO("I heard feedback x = %f", feedback_x);
+      ROS_INFO("I heard feedback y = %f", feedback_y);
+      ROS_INFO("I heard feedback theta = %f", feedback_theta);
       sleep(1.0);
       agv_move_baselink(feedback_x, feedback_y, feedback_theta);
     }
@@ -127,12 +143,14 @@ int main(int argc, char** argv){
   boost::thread spin_thread = boost::thread(boost::bind(&spinThread));
 
   service.client = service.n.serviceClient<scl_agv::agv_niryo>("agv_connect_niryo");
+  change_local = service.n.advertise<std_msgs::Int32>("change_localization", 1000);
 
-  agv_move_map(1, 0.5, 0);
+  //agv_move_map(-2.8, -23, 0);
 
   sleep(1.0);
   
-  service.service_client(1);
+  service.service_client(2);
+  //service.service_client(2);
 
   return 0;
 }
